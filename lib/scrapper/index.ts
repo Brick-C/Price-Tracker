@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { extractCurrency, extractPrice } from "../utils";
+import { extractCurrency, extractDescription, extractPrice } from "../utils";
 import { log } from "node:console";
 
 export async function scrapeAmazonProduct(url: string) {
@@ -48,20 +48,26 @@ export async function scrapeAmazonProduct(url: string) {
     const imageURLS = Object.keys(JSON.parse(image || "{}"));
     const currency = extractCurrency($(".a-price-symbol"));
     const discountRate = $(".savingsPercentage").text().replace(/[-%]/g, "");
+    const description = extractDescription($);
 
     //construct data object with scrapepd information
     const data = {
       url,
       title,
-      currentPrice: Number(currentPrice),
-      originalPrice: Number(originalPrice),
+      currentPrice: Number(currentPrice) || Number(originalPrice),
+      originalPrice: Number(originalPrice) || Number(currentPrice),
+      priceHistory: [],
       outOfStock: outOfStock,
       imageURLS,
       currency: currency || "$",
-      discountRate,
-      //later
-      //reviewsCount: 0,
-      //category: "",
+      discountRate: Number(discountRate),
+      reviewsCount: 100,
+      category: "category",
+      stars: 4.5,
+      description,
+      lowestPrice: Number(currentPrice) || Number(originalPrice),
+      highestPrice: Number(currentPrice) || Number(originalPrice),
+      average: Number(currentPrice) || Number(originalPrice),
     };
 
     return data;
